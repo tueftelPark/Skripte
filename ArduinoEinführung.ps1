@@ -1,5 +1,6 @@
 # ArduinoEinfuehrung.ps1
-# Vollautomatisches Update ohne Benutzerinteraktion
+# Aktualisiert den ArduinoEinfuehrung-Ordner auf dem Desktop ohne git
+# und ohne jegliche Benutzereingabe.
 
 $Desktop    = Join-Path $env:USERPROFILE 'Desktop'
 $TargetPath = Join-Path $Desktop 'ArduinoEinfuehrung'
@@ -9,43 +10,49 @@ $ZipUrl     = 'https://github.com/tueftelPark/ArduinoEinfuehrung/archive/refs/he
 Write-Host "==============================="
 Write-Host "  ArduinoEinfuehrung aktualisieren"
 Write-Host "==============================="
+Write-Host ""
 
-# 1) Arduino IDE schließen
+# 1) Arduino IDE schliessen
 Write-Host "[*] Schliesse Arduino IDE..."
 Get-Process -Name "Arduino IDE","arduino" -ErrorAction SilentlyContinue |
     Stop-Process -Force -ErrorAction SilentlyContinue
 
-# 2) Explorer schließen
+# 2) Explorer schliessen
 Write-Host "[*] Schliesse Explorer-Fenster..."
 Get-Process -Name "explorer" -ErrorAction SilentlyContinue |
     Stop-Process -Force -ErrorAction SilentlyContinue
 
-# 3) Alten Ordner automatisch löschen
+# 3) Alten Ordner loeschen — mit automatischen Wiederholversuchen
 if (Test-Path $TargetPath) {
     Write-Host "[*] Loesche alten Ordner..."
-    $tries = 0
-    while (Test-Path $TargetPath -and $tries -lt 3) {
+    $deleted = $false
+
+    for ($i = 1; $i -le 3; $i++) {
         Remove-Item $TargetPath -Recurse -Force -ErrorAction SilentlyContinue
-        Start-Sleep -Milliseconds 700
-        $tries++
+        if (-not (Test-Path $TargetPath)) {
+            Write-Host "    [+] Ordner geloescht."
+            $deleted = $true
+            break
+        } else {
+            Write-Host "    [!] Versuch $i : Ordner blockiert. Versuche erneut..."
+            Start-Sleep -Seconds 1
+        }
     }
 
-    if (Test-Path $TargetPath) {
-        Write-Host "[!] Ordner konnte nicht geloescht werden. Abbruch."
+    if (-not $deleted) {
+        Write-Host "    [!] Ordner konnte nicht geloescht werden. Skript wird beendet."
         exit
     }
-
-    Write-Host "    [+] Ordner geloescht."
 }
 
-# 4) Alte ZIP löschen (falls vorhanden)
+# 4) Alte ZIP loeschen
 Remove-Item $ZipPath -Force -ErrorAction SilentlyContinue
 
 # 5) ZIP herunterladen
 Write-Host "[*] Lade ZIP von GitHub..."
 Invoke-WebRequest -Uri $ZipUrl -OutFile $ZipPath -UseBasicParsing
 
-# 6) Entpacken
+# 6) ZIP entpacken
 Write-Host "[*] Entpacke ZIP..."
 Expand-Archive $ZipPath -DestinationPath $Desktop -Force
 
@@ -55,9 +62,10 @@ if (Test-Path $Unzip) {
     Rename-Item $Unzip 'ArduinoEinfuehrung' -Force
 }
 
-# 8) ZIP entfernen
+# 8) ZIP loeschen
 Remove-Item $ZipPath -Force -ErrorAction SilentlyContinue
 
-# 9) Neuen Ordner öffnen
-Write-Host "[+] Fertig — oeffne Projekt..."
+# 9) Neuen Ordner oeffnen
+Write-Host ""
+Write-Host "[+] Fertig – oeffne Projekt..."
 Start-Process explorer.exe $TargetPath
