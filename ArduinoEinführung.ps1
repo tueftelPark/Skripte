@@ -1,11 +1,11 @@
 # ArduinoEinfuehrung.ps1
-# Laedt das ArduinoEinfuehrung-Projekt von GitHub als ZIP, entpackt es auf den Desktop
-# und oeffnet anschliessend den Ordner. Kein installiertes git noetig.
+# Lädt die aktuelle Version des ArduinoEinfuehrung-Repos von GitHub herunter,
+# entfernt alte Dateien und öffnet den neuen Ordner auf dem Desktop.
 
 $Desktop    = Join-Path $env:USERPROFILE 'Desktop'
 $TargetPath = Join-Path $Desktop 'ArduinoEinfuehrung'
 $ZipPath    = Join-Path $Desktop 'ArduinoEinfuehrung.zip'
-# Falls dein Branch nicht "main" heisst (z.B. "master"), unten anpassen:
+# Wenn Branch != main → am Ende entsprechend anpassen
 $ZipUrl     = 'https://github.com/tueftelPark/ArduinoEinfuehrung/archive/refs/heads/main.zip'
 
 Write-Host "==============================="
@@ -13,7 +13,7 @@ Write-Host "  ArduinoEinfuehrung aktualisieren"
 Write-Host "==============================="
 Write-Host ""
 
-# 1) Arduino IDE schliessen
+# 1) Arduino IDE schließen
 Write-Host "[*] Schliesse Arduino IDE (falls offen)..."
 $arduinoProcs = @('Arduino IDE','arduino')
 foreach ($name in $arduinoProcs) {
@@ -21,13 +21,11 @@ foreach ($name in $arduinoProcs) {
         try {
             $_ | Stop-Process -Force -ErrorAction Stop
             Write-Host "    [+] Prozess $name beendet."
-        } catch {
-            # ignorieren, wenn nicht laufend
-        }
+        } catch {}
     }
 }
 
-# 2) Alle Explorer-Fenster schliessen (explorer.exe stoppen)
+# 2) Alle Explorer-Fenster schließen
 Write-Host ""
 Write-Host "[*] Schliesse alle Explorer-Fenster..."
 $explorerClosed = $false
@@ -35,9 +33,7 @@ Get-Process -Name 'explorer' -ErrorAction SilentlyContinue | ForEach-Object {
     try {
         $_ | Stop-Process -Force -ErrorAction Stop
         $explorerClosed = $true
-    } catch {
-        # ignorieren
-    }
+    } catch {}
 }
 
 if ($explorerClosed) {
@@ -46,35 +42,52 @@ if ($explorerClosed) {
     Write-Host "    [!] Keine Explorer-Fenster offen."
 }
 
-# 3) Alten Ordner loeschen
+# 3) Alten Ordner löschen — mit Wiederholversuchen
 Write-Host ""
 if (Test-Path -LiteralPath $TargetPath) {
-    Write-Host "[*] Loesche alten 'ArduinoEinfuehrung'-Ordner..."
-    try {
-        Remove-Item -LiteralPath $TargetPath -Recurse -Force -ErrorAction Stop
-    } catch {
-        Write-Host "    [!] Fehler: Ordner konnte nicht geloescht werden."
-        Write-Host "        Bitte alle Dateien im Ordner schliessen und Skript erneut ausfuehren."
-        Read-Host "Enter druecken zum Beenden"
+    Write-Host "[*] Lösche alten 'ArduinoEinfuehrung'-Ordner..."
+
+    $maxTries = 3
+    $deleted  = $false
+
+    for ($i = 1; $i -le $maxTries; $i++) {
+        try {
+            Remove-Item -LiteralPath $TargetPath -Recurse -Force -ErrorAction Stop
+            $deleted = $true
+            Write-Host "    [+] Ordner wurde gelöscht."
+            break
+        } catch {
+            Write-Host "    [!] Versuch $i: Ordner konnte nicht gelöscht werden."
+            if ($i -lt $maxTries) {
+                Write-Host "        ➤ Bitte alle Dateien/Programme schließen,"
+                Write-Host "          die im Ordner geöffnet sind."
+                Read-Host "        Enter drücken, um es erneut zu versuchen"
+            }
+        }
+    }
+
+    if (-not $deleted) {
+        Write-Host "    [!] Auch nach mehreren Versuchen blockiert!"
+        Write-Host "        Vermutlich ist noch eine Datei geöffnet."
+        Read-Host "Enter drücken zum Beenden"
         exit 1
     }
 }
 
-# 4) Alte ZIP loeschen (falls vorhanden)
+# 4) alte ZIP löschen
 if (Test-Path -LiteralPath $ZipPath) {
-    Write-Host "[*] Loesche alte ZIP-Datei..."
     Remove-Item -LiteralPath $ZipPath -Force -ErrorAction SilentlyContinue
 }
 
-# 5) ZIP von GitHub laden
+# 5) ZIP herunterladen
 Write-Host ""
-Write-Host "[*] Lade aktuelle Version von GitHub..."
+Write-Host "[*] Lade aktuelle Version von GitHub herunter..."
 try {
     Invoke-WebRequest -Uri $ZipUrl -OutFile $ZipPath -UseBasicParsing -ErrorAction Stop
 } catch {
-    Write-Host "    [!] Fehler beim Herunterladen der ZIP-Datei."
-    Write-Host "        Bitte Internetverbindung pruefen."
-    Read-Host "Enter druecken zum Beenden"
+    Write-Host "    [!] Fehler beim Herunterladen!"
+    Write-Host "        Internetverbindung prüfen."
+    Read-Host "Enter drücken zum Beenden"
     exit 1
 }
 
@@ -83,17 +96,14 @@ Write-Host "[*] Entpacke ZIP-Datei..."
 try {
     Expand-Archive -LiteralPath $ZipPath -DestinationPath $Desktop -Force -ErrorAction Stop
 } catch {
-    Write-Host "    [!] Fehler beim Entpacken der ZIP-Datei."
-    Read-Host "Enter druecken zum Beenden"
+    Write-Host "    [!] Fehler beim Entpacken!"
+    Read-Host "Enter drücken zum Beenden"
     exit 1
 }
 
-# 7) Entpackten Ordner richtig benennen (ArduinoEinfuehrung-main -> ArduinoEinfuehrung)
+# 7) entpackten Ordner korrekt benennen
 $UnzippedFolder = Join-Path $Desktop 'ArduinoEinfuehrung-main'
 if (Test-Path -LiteralPath $UnzippedFolder) {
-    if (Test-Path -LiteralPath $TargetPath) {
-        Remove-Item -LiteralPath $TargetPath -Recurse -Force -ErrorAction SilentlyContinue
-    }
     Rename-Item -LiteralPath $UnzippedFolder -NewName 'ArduinoEinfuehrung'
 }
 
@@ -102,9 +112,9 @@ if (Test-Path -LiteralPath $ZipPath) {
     Remove-Item -LiteralPath $ZipPath -Force -ErrorAction SilentlyContinue
 }
 
-# 9) Am Ende GENAU EIN Explorer-Fenster im Zielordner oeffnen
+# 9) Zielordner öffnen — genau ein Explorer-Fenster
 Write-Host ""
-Write-Host "[+] Fertig. Oeffne Ordner 'ArduinoEinfuehrung'..."
+Write-Host "[+] Fertig ✅ Öffne ArduinoEinfuehrung..."
 Start-Process -FilePath 'explorer.exe' -ArgumentList $TargetPath
 
 exit 0
