@@ -4,10 +4,10 @@
 $Desktop    = Join-Path $env:USERPROFILE 'Desktop'
 $TargetPath = Join-Path $Desktop 'ArduinoEinfuehrung'
 $ZipPath    = Join-Path $Desktop 'ArduinoEinfuehrung.zip'
-$ZipUrl     = 'https://github.com/tueftelPark/ArduinoEinfuehrung/archive/refs/heads/main.zip'
+$ZipUrl     = 'https://github.com/tueftelPark/ArduinoEinfuehrung/archive/refs/heads/SensorKit.zip'
 
 Write-Host "==============================="
-Write-Host "  ArduinoEinfuehrung aktualisieren"
+Write-Host "  ArduinoEinfuehrung aktualisieren (Branch SensorKit)"
 Write-Host "==============================="
 
 # 1) Arduino IDE schliessen
@@ -56,7 +56,7 @@ Write-Host "[*] Entpacke ZIP..."
 Expand-Archive $ZipPath -DestinationPath $Desktop -Force
 
 # 7) Entpackten Ordner umbenennen
-$Unzip = Join-Path $Desktop 'ArduinoEinfuehrung-main'
+$Unzip = Join-Path $Desktop 'ArduinoEinfuehrung-SensorKit'
 if (Test-Path $Unzip) {
     Rename-Item $Unzip 'ArduinoEinfuehrung' -Force
 }
