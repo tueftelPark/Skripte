@@ -1,5 +1,6 @@
 # ArduinoEinfuehrung.ps1
 # Aktualisiert den ArduinoEinfuehrung-Ordner auf dem Desktop ohne git
+# und ohne jegliche Benutzereingabe.
 
 $Desktop    = Join-Path $env:USERPROFILE 'Desktop'
 $TargetPath = Join-Path $Desktop 'ArduinoEinfuehrung'
@@ -11,17 +12,17 @@ Write-Host "  ArduinoEinfuehrung aktualisieren"
 Write-Host "==============================="
 Write-Host ""
 
-# 1) Arduino IDE schließen
+# 1) Arduino IDE schliessen
 Write-Host "[*] Schliesse Arduino IDE..."
 Get-Process -Name "Arduino IDE","arduino" -ErrorAction SilentlyContinue |
     Stop-Process -Force -ErrorAction SilentlyContinue
 
-# 2) Explorer schließen
+# 2) Explorer schliessen
 Write-Host "[*] Schliesse Explorer-Fenster..."
 Get-Process -Name "explorer" -ErrorAction SilentlyContinue |
     Stop-Process -Force -ErrorAction SilentlyContinue
 
-# 3) Alten Ordner löschen — mit Wiederholversuchen
+# 3) Alten Ordner loeschen — mit automatischen Wiederholversuchen
 if (Test-Path $TargetPath) {
     Write-Host "[*] Loesche alten Ordner..."
     $deleted = $false
@@ -33,23 +34,18 @@ if (Test-Path $TargetPath) {
             $deleted = $true
             break
         } else {
-            Write-Host "    [!] Versuch $i : Ordner blockiert."
-            if ($i -lt 3) {
-                Write-Host "        Bitte Dateien schliessen & Enter druecken."
-                Read-Host
-            }
+            Write-Host "    [!] Versuch $i : Ordner blockiert. Versuche erneut..."
+            Start-Sleep -Seconds 1
         }
     }
 
     if (-not $deleted) {
-        Write-Host "!!! Ordner konnte nicht geloescht werden !!!"
-        Write-Host "Bitte Programme schliessen und Skript erneut starten."
-        Read-Host "Enter druecken zum Beenden"
+        Write-Host "    [!] Ordner konnte nicht geloescht werden. Skript wird beendet."
         exit
     }
 }
 
-# 4) Alte ZIP löschen
+# 4) Alte ZIP loeschen
 Remove-Item $ZipPath -Force -ErrorAction SilentlyContinue
 
 # 5) ZIP herunterladen
@@ -66,13 +62,10 @@ if (Test-Path $Unzip) {
     Rename-Item $Unzip 'ArduinoEinfuehrung' -Force
 }
 
-# 8) ZIP löschen
+# 8) ZIP loeschen
 Remove-Item $ZipPath -Force -ErrorAction SilentlyContinue
 
-# 9) Neuen Ordner öffnen
+# 9) Neuen Ordner oeffnen
 Write-Host ""
-Write-Host "[+] Fertig ✅ Öffne Projekt..."
+Write-Host "[+] Fertig – oeffne Projekt..."
 Start-Process explorer.exe $TargetPath
-
-Write-Host ""
-Read-Host "Enter druecken zum Schliessen"
