@@ -38,6 +38,8 @@ set "SETUP_EXE=%TEMP%\arduino_setup.exe"
 set "ICON_DIR=%LOCALAPPDATA%\TueftelPark"
 :: Pfad zum Edge-Browser fuer das Ersatz-Icon
 set "EDGE_ICON=%ProgramFiles(x86)%\Microsoft\Edge\Application\msedge.exe"
+:: Pfad fuer das McAfee Removal Tool
+set "MCPR_EXE=%TEMP%\MCPR.exe"
 
 :: Alten temporaeren Entpack-Ordner leeren, falls er vom letzten Mal noch existiert
 if exist "%TEMP_EXTRACT%" rmdir /S /Q "%TEMP_EXTRACT%"
@@ -53,14 +55,18 @@ for /D %%D in ("%DESKTOP_PATH%\*") do (
 echo        -^> Desktop wurde aufgeraeumt!
 echo.
 
-:: --- 2. MCAFEE DEINSTALLATION (Halbautomatisch) ---
-echo [2/9] Pruefe auf vorinstalliertes McAfee...
-echo        ACHTUNG: Falls sich ein Fenster oeffnet, klicke bitte manuell
-echo        auf Deinstallieren. Das Skript wartet so lange auf dich!
-:: Wir versuchen die typischen Lenovo-Vorinstallationen zu triggern
-winget uninstall --name "McAfee LiveSafe" --accept-source-agreements >nul 2>&1
-winget uninstall --name "McAfee Security" --accept-source-agreements >nul 2>&1
-winget uninstall --name "McAfee WebAdvisor" --accept-source-agreements >nul 2>&1
+:: --- 2. MCAFEE DEINSTALLATION (Offizielles Tool) ---
+echo [2/9] Lade offizielles McAfee Removal Tool (MCPR) herunter...
+curl -L -s -o "%MCPR_EXE%" "https://download.mcafee.com/molbin/iss-loc/SupportTools/MCPR/MCPR.exe"
+
+if exist "%MCPR_EXE%" (
+    echo        ACHTUNG: Es oeffnet sich nun das McAfee-Entfernungs-Tool!
+    echo        Bitte folge den Anweisungen auf dem Bildschirm.
+    echo        Das Skript wartet, bis du das Tool geschlossen hast...
+    start /wait "" "%MCPR_EXE%"
+) else (
+    echo        [FEHLER] Konnte das Tool nicht herunterladen.
+)
 echo        -^> McAfee Check abgeschlossen!
 echo.
 
@@ -143,6 +149,7 @@ echo [9/9] Raeume temporaere Dateien auf...
 if exist "%SETUP_EXE%" del "%SETUP_EXE%"
 if exist "%TEMP_ZIP%" del "%TEMP_ZIP%"
 if exist "%TEMP_EXTRACT%" rmdir /S /Q "%TEMP_EXTRACT%"
+if exist "%MCPR_EXE%" del "%MCPR_EXE%"
 
 echo.
 echo ========================================================
