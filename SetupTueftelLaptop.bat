@@ -69,9 +69,9 @@ curl -L -s -o "%ICON_DIR%\tinkercad.ico" "https://www.tinkercad.com/favicon.ico"
     echo IconFile=%ICON_DIR%\tinkercad.ico
 ) > "%DESKTOP_PATH%\Tinkercad.url"
 
-:: Tuefteln Feedback (Laedt nun das echte ICO von eurem eigenen GitHub Repo!)
+:: Tuefteln Feedback (Plan B: Google Favicon API)
 echo        -^> Tuefteln Feedback
-curl -L -s -o "%ICON_DIR%\tuefteln.ico" "https://raw.githubusercontent.com/tueftelPark/Skripte/main/tuefteln.ico"
+curl -L -s -o "%ICON_DIR%\tuefteln.ico" "http://www.google.com/s2/favicons?domain=tuefteln.com"
 (
     echo [InternetShortcut]
     echo URL=https://www.tuefteln.com/feedback
