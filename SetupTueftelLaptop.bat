@@ -15,32 +15,47 @@ set "DESKTOP_PATH=%USERPROFILE%\Desktop"
 :: --- 1. ARDUINO IDE INSTALLIEREN ---
 echo [1/6] Pruefe und installiere Arduino IDE...
 echo        Das kann je nach Internetgeschwindigkeit dauern.
-echo        Download-Fortschritt wird unten angezeigt...
 echo.
-
 winget install --id ArduinoSA.IDE.stable --exact --scope user --accept-package-agreements --accept-source-agreements
 
 if %errorlevel% neq 0 (
     echo.
-    echo [WARNUNG] Winget konnte Arduino nicht installieren. 
-    pause
+    echo [WARNUNG] Winget meldete einen Fehler, wir pruefen trotzdem, ob es da ist...
 ) else (
     echo.
-    echo        -^> Arduino IDE Check / Installation abgeschlossen!
+    echo        -^> Winget Download abgeschlossen!
 )
 echo.
 
-:: --- 2. DESKTOP-VERKNUEPFUNG FUER ARDUINO ERSTELLEN ---
-echo [2/6] Suche Arduino und erstelle Verknuepfung...
-:: Der Standardpfad fuer die User-Installation
-set "ARDUINO_EXE=%LOCALAPPDATA%\Programs\Arduino IDE\Arduino IDE.exe"
+:: --- 2. DYNAMISCHE SUCHE & INDEXIERUNG ---
+echo [2/6] Suche Arduino und registriere es im System (Indexierung)...
+set "ARDUINO_EXE="
 
-if exist "!ARDUINO_EXE!" (
-    :: Nutzt einen kurzen PowerShell-Befehl, um den Shortcut zu erzeugen
+:: Zuerst im Standard-Ordner suchen
+if exist "%LOCALAPPDATA%\Programs\Arduino IDE\Arduino IDE.exe" (
+    set "ARDUINO_EXE=%LOCALAPPDATA%\Programs\Arduino IDE\Arduino IDE.exe"
+)
+
+:: Wenn nicht gefunden, den WinGet-Packages Ordner durchsuchen
+if "!ARDUINO_EXE!"=="" (
+    for /f "delims=" %%I in ('dir /b /s "%LOCALAPPDATA%\Microsoft\WinGet\Packages\Arduino IDE.exe" 2^>nul') do (
+        set "ARDUINO_EXE=%%I"
+    )
+)
+
+if not "!ARDUINO_EXE!"=="" (
+    echo        -^> Gefunden: !ARDUINO_EXE!
+    
+    :: 1. Verknuepfung fuer den Desktop
     powershell -command "$wshell = New-Object -ComObject WScript.Shell; $shortcut = $wshell.CreateShortcut('%DESKTOP_PATH%\Arduino IDE.lnk'); $shortcut.TargetPath = '!ARDUINO_EXE!'; $shortcut.Save()"
-    echo        -^> Verknuepfung auf dem Desktop erstellt!
+    
+    :: 2. Verknuepfung fuer das Startmenue (Dies sorgt fuer die Windows-Indexierung!)
+    set "STARTMENU_PATH=%APPDATA%\Microsoft\Windows\Start Menu\Programs"
+    powershell -command "$wshell = New-Object -ComObject WScript.Shell; $shortcut = $wshell.CreateShortcut('!STARTMENU_PATH!\Arduino IDE.lnk'); $shortcut.TargetPath = '!ARDUINO_EXE!'; $shortcut.Save()"
+    
+    echo        -^> Erfolgreich auf Desktop und im Startmenue registriert!
 ) else (
-    echo        -^> [INFO] Arduino wurde evtl. in einem anderen Pfad installiert.
+    echo        -^> [FEHLER] Arduino IDE.exe konnte auf dem System nicht gefunden werden.
 )
 echo.
 
