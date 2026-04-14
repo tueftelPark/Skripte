@@ -28,11 +28,23 @@ set "TEMP_EXTRACT=%TEMP%\TueftelSkripte_Extract"
 set "DESKTOP_PATH=%USERPROFILE%\Desktop"
 
 :: --- 1. ARDUINO IDE INSTALLIEREN ---
-echo [1/5] Pruefe und installiere Arduino IDE (neueste Version)...
-echo        (Das kann einen Moment dauern. Bitte warten...)
-:: winget sucht die App "Arduino.IDE", akzeptiert die Lizenz automatisch und installiert/updatet lautlos
-winget install --id Arduino.IDE --exact --silent --accept-package-agreements --accept-source-agreements >nul 2>&1
-echo        -^> Arduino IDE Check abgeschlossen!
+echo [1/5] Pruefe und installiere Arduino IDE...
+echo        Das kann je nach Internetgeschwindigkeit dauern.
+echo        Download-Fortschritt wird unten angezeigt...
+echo.
+
+:: Korrigierte ID (ArduinoSA.IDE.stable) und Ausgabe bleibt sichtbar
+winget install --id ArduinoSA.IDE.stable --exact --accept-package-agreements --accept-source-agreements
+
+if %errorlevel% neq 0 (
+    echo.
+    echo [WARNUNG] Winget konnte Arduino nicht installieren. 
+    echo           Bitte pruefe die Fehlermeldung oberhalb.
+    pause
+) else (
+    echo.
+    echo        -^> Arduino IDE Check / Installation abgeschlossen!
+)
 echo.
 
 :: Alten temporaeren Entpack-Ordner leeren, falls er noch existiert
