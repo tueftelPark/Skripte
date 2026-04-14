@@ -12,7 +12,6 @@ echo   Dieses Skript leert als Erstes den kompletten Desktop!
 echo   Alle bisherigen Dateien, Ordner und Verknuepfungen,
 echo   die auf diesem Bildschirm liegen, werden geloescht.
 echo.
-:: CHOICE erzwingt eine Eingabe (J oder N). Bei N (errorlevel 2) bricht das Skript ab.
 CHOICE /C JN /M "Bist du sicher, dass du den Laptop JETZT neu aufsetzen willst?"
 if errorlevel 2 (
     echo.
@@ -117,21 +116,17 @@ if not exist "%ICON_DIR%" mkdir "%ICON_DIR%"
 :: Tinkercad (mit eigenem Icon)
 echo        -^> Tinkercad
 curl -L -s -o "%ICON_DIR%\tinkercad.ico" "https://www.tinkercad.com/favicon.ico"
-(
-    echo [InternetShortcut]
-    echo URL=https://www.tinkercad.com/
-    echo IconIndex=0
-    echo IconFile=%ICON_DIR%\tinkercad.ico
-) > "%DESKTOP_PATH%\Tinkercad.url"
+echo [InternetShortcut] > "%DESKTOP_PATH%\Tinkercad.url"
+echo URL=https://www.tinkercad.com/ >> "%DESKTOP_PATH%\Tinkercad.url"
+echo IconIndex=0 >> "%DESKTOP_PATH%\Tinkercad.url"
+echo IconFile=%ICON_DIR%\tinkercad.ico >> "%DESKTOP_PATH%\Tinkercad.url"
 
-:: Tuefteln Feedback (Nutzt nun das Symbol des Edge-Browsers)
+:: Tuefteln Feedback (Nutzt nun das Symbol des Edge-Browsers - Zeile fuer Zeile generiert)
 echo        -^> Tuefteln Feedback
-(
-    echo [InternetShortcut]
-    echo URL=https://www.tuefteln.com/feedback
-    echo IconIndex=0
-    echo IconFile=%EDGE_ICON%
-) > "%DESKTOP_PATH%\Tuefteln Feedback.url"
+echo [InternetShortcut] > "%DESKTOP_PATH%\Tuefteln Feedback.url"
+echo URL=https://www.tuefteln.com/feedback >> "%DESKTOP_PATH%\Tuefteln Feedback.url"
+echo IconIndex=0 >> "%DESKTOP_PATH%\Tuefteln Feedback.url"
+echo IconFile=%EDGE_ICON% >> "%DESKTOP_PATH%\Tuefteln Feedback.url"
 echo.
 
 :: --- 8. AUFRAEUMEN ---
