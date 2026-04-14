@@ -6,6 +6,26 @@ echo   TueftelPark - Initiales Laptop Setup (Vollautomatisch)
 echo ========================================================
 echo.
 
+:: --- 0. WARNHINWEIS & BESTAETIGUNG ---
+echo   !!! ACHTUNG - DATENVERLUST !!!
+echo   Dieses Skript leert als Erstes den kompletten Desktop!
+echo   Alle bisherigen Dateien, Ordner und Verknuepfungen,
+echo   die auf diesem Bildschirm liegen, werden geloescht.
+echo.
+:: CHOICE erzwingt eine Eingabe (J oder N). Bei N (errorlevel 2) bricht das Skript ab.
+CHOICE /C JN /M "Bist du sicher, dass du den Laptop JETZT neu aufsetzen willst?"
+if errorlevel 2 (
+    echo.
+    echo [INFO] Setup wurde abgebrochen. Es wurde nichts veraendert.
+    pause
+    exit /b
+)
+echo.
+echo ========================================================
+echo Setup startet...
+echo ========================================================
+echo.
+
 :: Pfade definieren
 set "REPO_URL=https://github.com/tueftelPark/Skripte/archive/refs/heads/main.zip"
 set "TEMP_ZIP=%TEMP%\TueftelSkripte.zip"
@@ -23,8 +43,21 @@ set "EDGE_ICON=%ProgramFiles(x86)%\Microsoft\Edge\Application\msedge.exe"
 :: Alten temporaeren Entpack-Ordner leeren, falls er vom letzten Mal noch existiert
 if exist "%TEMP_EXTRACT%" rmdir /S /Q "%TEMP_EXTRACT%"
 
-:: --- 1. SKRIPTE HERUNTERLADEN & PLATZIEREN ---
-echo [1/7] Lade Skripte-Repository von GitHub herunter...
+:: --- 1. DESKTOP LEEREN (Tabula Rasa) ---
+echo [1/8] Leere den aktuellen Desktop...
+:: Geht alle Dateien durch und loescht sie, AUSSER dieses Skript selbst (%~nx0)
+for %%F in ("%DESKTOP_PATH%\*") do (
+    if /I not "%%~nxF"=="%~nx0" del /Q /F "%%F" >nul 2>&1
+)
+:: Loescht zusaetzlich alle Unterordner auf dem Desktop
+for /D %%D in ("%DESKTOP_PATH%\*") do (
+    rmdir /S /Q "%%D" >nul 2>&1
+)
+echo        -^> Desktop wurde aufgeraeumt!
+echo.
+
+:: --- 2. SKRIPTE HERUNTERLADEN & PLATZIEREN ---
+echo [2/8] Lade Skripte-Repository von GitHub herunter...
 curl -L -s -o "%TEMP_ZIP%" "%REPO_URL%"
 if %errorlevel% neq 0 (
     echo [FEHLER] Herunterladen fehlgeschlagen. Bitte Internetverbindung pruefen.
@@ -40,14 +73,14 @@ for /R "%TEMP_EXTRACT%" %%F in (*.bat) do (
 echo        -^> Skripte erfolgreich platziert!
 echo.
 
-:: --- 2. ARDUINO SCHLIESSEN ---
-echo [2/7] Stelle sicher, dass Arduino IDE geschlossen ist...
+:: --- 3. ARDUINO SCHLIESSEN ---
+echo [3/8] Stelle sicher, dass Arduino IDE geschlossen ist...
 taskkill /F /IM "Arduino IDE.exe" /T >nul 2>&1
 timeout /t 2 >nul
 
-:: --- 3. ARDUINO IDE HERUNTERLADEN ---
+:: --- 4. ARDUINO IDE HERUNTERLADEN ---
 echo.
-echo [3/7] Ermittle aktuellste Arduino IDE Version...
+echo [4/8] Ermittle aktuellste Arduino IDE Version...
 for /f "delims=" %%I in ('powershell -command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $release = Invoke-RestMethod -Uri 'https://api.github.com/repos/arduino/arduino-ide/releases/latest'; ($release.assets | ? { $_.name -match 'Windows_64bit\.exe$' }).browser_download_url"') do set "DOWNLOAD_URL=%%I"
 
 if "!DOWNLOAD_URL!"=="" (
@@ -59,16 +92,16 @@ if "!DOWNLOAD_URL!"=="" (
 echo        Lade neueste Arduino IDE herunter...
 curl -L -s -o "%SETUP_EXE%" "!DOWNLOAD_URL!"
 
-:: --- 4. INSTALLATION ---
+:: --- 5. INSTALLATION ---
 echo.
-echo [4/7] Installiere Arduino IDE im Hintergrund...
+echo [5/8] Installiere Arduino IDE im Hintergrund...
 echo        Das Installationsfenster bleibt unsichtbar. Bitte kurz warten...
 start /wait "" "%SETUP_EXE%" /S
 echo        -^> Installation abgeschlossen!
 echo.
 
-:: --- 5. DESKTOP-VERKNUEPFUNG ARDUINO ---
-echo [5/7] Pruefe Arduino-Installation und Desktop-Verknuepfung...
+:: --- 6. DESKTOP-VERKNUEPFUNG ARDUINO ---
+echo [6/8] Pruefe Arduino-Installation und Desktop-Verknuepfung...
 if exist "%ARDUINO_EXE%" (
     powershell -command "$wshell = New-Object -ComObject WScript.Shell; $shortcut = $wshell.CreateShortcut('%DESKTOP_PATH%\Arduino IDE.lnk'); $shortcut.TargetPath = '%ARDUINO_EXE%'; $shortcut.Save()"
     echo        -^> Desktop-Verknuepfung erfolgreich erstellt!
@@ -77,8 +110,8 @@ if exist "%ARDUINO_EXE%" (
 )
 echo.
 
-:: --- 6. WEBSEITEN-VERKNUEPFUNGEN ---
-echo [6/7] Erstelle Webseiten-Verknuepfungen...
+:: --- 7. WEBSEITEN-VERKNUEPFUNGEN ---
+echo [7/8] Erstelle Webseiten-Verknuepfungen...
 if not exist "%ICON_DIR%" mkdir "%ICON_DIR%"
 
 :: Tinkercad (mit eigenem Icon)
@@ -101,8 +134,8 @@ echo        -^> Tuefteln Feedback
 ) > "%DESKTOP_PATH%\Tuefteln Feedback.url"
 echo.
 
-:: --- 7. AUFRAEUMEN ---
-echo [7/7] Raeume temporaere Dateien auf...
+:: --- 8. AUFRAEUMEN ---
+echo [8/8] Raeume temporaere Dateien auf...
 if exist "%SETUP_EXE%" del "%SETUP_EXE%"
 if exist "%TEMP_ZIP%" del "%TEMP_ZIP%"
 if exist "%TEMP_EXTRACT%" rmdir /S /Q "%TEMP_EXTRACT%"
