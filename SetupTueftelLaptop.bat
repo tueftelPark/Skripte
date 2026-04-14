@@ -59,7 +59,7 @@ echo.
 echo [5/7] Erstelle Webseiten-Verknuepfungen...
 if not exist "%ICON_DIR%" mkdir "%ICON_DIR%"
 
-:: Tinkercad
+:: Tinkercad (Hat ein klassisches Favicon)
 echo        -^> Tinkercad
 curl -L -s -o "%ICON_DIR%\tinkercad.ico" "https://www.tinkercad.com/favicon.ico"
 (
@@ -69,9 +69,9 @@ curl -L -s -o "%ICON_DIR%\tinkercad.ico" "https://www.tinkercad.com/favicon.ico"
     echo IconFile=%ICON_DIR%\tinkercad.ico
 ) > "%DESKTOP_PATH%\Tinkercad.url"
 
-:: Tuefteln Feedback
+:: Tuefteln Feedback (Nutzt DuckDuckGo Service fuer echtes .ico Format)
 echo        -^> Tuefteln Feedback
-curl -L -s -o "%ICON_DIR%\tuefteln.ico" "https://www.tuefteln.com/favicon.ico"
+curl -L -s -o "%ICON_DIR%\tuefteln.ico" "https://icons.duckduckgo.com/ip3/www.tuefteln.com.ico"
 (
     echo [InternetShortcut]
     echo URL=https://www.tuefteln.com/feedback
