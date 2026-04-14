@@ -16,8 +16,16 @@ set "ARDUINO_DIR=%LOCALAPPDATA%\Programs\Arduino IDE"
 set "ARDUINO_EXE=%ARDUINO_DIR%\Arduino IDE.exe"
 set "SETUP_EXE=%TEMP%\arduino_setup.exe"
 
-:: --- 1. ARDUINO IDE HERUNTERLADEN (Bypass Winget) ---
-echo [1/5] Ermittle aktuellste Arduino IDE Version...
+:: --- 1. ARDUINO SCHLIESSEN ---
+echo [1/6] Stelle sicher, dass Arduino IDE geschlossen ist...
+:: Beendet das Programm und alle zugehoerigen Hintergrundprozesse sofort
+taskkill /F /IM "Arduino IDE.exe" /T >nul 2>&1
+:: Gib Windows 2 Sekunden Zeit, um die Datei-Sperren sauber aufzuheben
+timeout /t 2 >nul
+
+:: --- 2. ARDUINO IDE HERUNTERLADEN (Bypass Winget) ---
+echo.
+echo [2/6] Ermittle aktuellste Arduino IDE Version...
 :: Fragt die offizielle API nach dem Link zur neuesten .exe Datei
 for /f "delims=" %%I in ('powershell -command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $release = Invoke-RestMethod -Uri 'https://api.github.com/repos/arduino/arduino-ide/releases/latest'; ($release.assets | ? { $_.name -match 'Windows_64bit\.exe$' }).browser_download_url"') do set "DOWNLOAD_URL=%%I"
 
@@ -27,13 +35,12 @@ if "!DOWNLOAD_URL!"=="" (
     exit /b
 )
 
-echo.
-echo Lade neueste Arduino IDE herunter...
-curl -L -o "%SETUP_EXE%" "!DOWNLOAD_URL!"
+echo        Lade neueste Arduino IDE herunter...
+curl -L -s -o "%SETUP_EXE%" "!DOWNLOAD_URL!"
 
-:: --- 2. INSTALLATION ---
+:: --- 3. INSTALLATION ---
 echo.
-echo [2/5] Installiere Arduino IDE im Hintergrund...
+echo [3/6] Installiere Arduino IDE im Hintergrund...
 echo        Das Installationsfenster bleibt unsichtbar. Bitte kurz warten...
 :: /S ist der Befehl fuer den echten Installer, um ohne Fragen im Hintergrund zu arbeiten
 start /wait "" "%SETUP_EXE%" /S
@@ -41,8 +48,8 @@ start /wait "" "%SETUP_EXE%" /S
 echo        -^> Installation im Standard-Ordner abgeschlossen!
 echo.
 
-:: --- 3. DESKTOP-VERKNUEPFUNG SICHERSTELLEN ---
-echo [3/5] Pruefe Arduino-Installation und Desktop-Verknuepfung...
+:: --- 4. DESKTOP-VERKNUEPFUNG SICHERSTELLEN ---
+echo [4/6] Pruefe Arduino-Installation und Desktop-Verknuepfung...
 if exist "%ARDUINO_EXE%" (
     :: Der echte Installer hat es nun ins Startmenue gepackt. Wir legen nur noch den Desktop-Shortcut an.
     powershell -command "$wshell = New-Object -ComObject WScript.Shell; $shortcut = $wshell.CreateShortcut('%DESKTOP_PATH%\Arduino IDE.lnk'); $shortcut.TargetPath = '%ARDUINO_EXE%'; $shortcut.Save()"
@@ -55,8 +62,8 @@ echo.
 :: Alten temporaeren Entpack-Ordner leeren, falls er noch existiert
 if exist "%TEMP_EXTRACT%" rmdir /S /Q "%TEMP_EXTRACT%"
 
-:: --- 4. SKRIPTE HERUNTERLADEN ---
-echo [4/5] Lade Skripte-Repository von GitHub herunter...
+:: --- 5. SKRIPTE HERUNTERLADEN ---
+echo [5/6] Lade Skripte-Repository von GitHub herunter...
 curl -L -s -o "%TEMP_ZIP%" "%REPO_URL%"
 if %errorlevel% neq 0 (
     echo [FEHLER] Herunterladen fehlgeschlagen. Bitte Internetverbindung pruefen.
@@ -70,9 +77,9 @@ for /R "%TEMP_EXTRACT%" %%F in (*.bat) do (
     copy "%%F" "%DESKTOP_PATH%\" /Y >nul
 )
 
-:: --- 5. AUFRAEUMEN ---
+:: --- 6. AUFRAEUMEN ---
 echo.
-echo [5/5] Raeume temporaere Dateien auf...
+echo [6/6] Raeume temporaere Dateien auf...
 if exist "%SETUP_EXE%" del "%SETUP_EXE%"
 if exist "%TEMP_ZIP%" del "%TEMP_ZIP%"
 if exist "%TEMP_EXTRACT%" rmdir /S /Q "%TEMP_EXTRACT%"
