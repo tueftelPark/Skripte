@@ -34,12 +34,14 @@ set "DESKTOP_PATH=%USERPROFILE%\Desktop"
 set "ICON_DIR=%LOCALAPPDATA%\TueftelPark"
 :: Pfad zum Edge-Browser fuer das Ersatz-Icon
 set "EDGE_ICON=%ProgramFiles(x86)%\Microsoft\Edge\Application\msedge.exe"
+:: Pfad zu Arduino (fuer die Wiederherstellung der Verknuepfung)
+set "ARDUINO_EXE=%LOCALAPPDATA%\Programs\Arduino IDE\Arduino IDE.exe"
 
 :: Alten temporaeren Entpack-Ordner leeren, falls er vom letzten Mal noch existiert
 if exist "%TEMP_EXTRACT%" rmdir /S /Q "%TEMP_EXTRACT%"
 
 :: --- 1. DESKTOP LEEREN (Tabula Rasa) ---
-echo [1/4] Leere den aktuellen Desktop...
+echo [1/5] Leere den aktuellen Desktop...
 for %%F in ("%DESKTOP_PATH%\*") do (
     if /I not "%%~nxF"=="%~nx0" del /Q /F "%%F" >nul 2>&1
 )
@@ -50,7 +52,7 @@ echo        -^> Desktop wurde aufgeraeumt!
 echo.
 
 :: --- 2. SKRIPTE HERUNTERLADEN & PLATZIEREN ---
-echo [2/4] Lade Skripte-Repository von GitHub herunter...
+echo [2/5] Lade Skripte-Repository von GitHub herunter...
 curl -L -s -o "%TEMP_ZIP%" "%REPO_URL%"
 if %errorlevel% neq 0 (
     echo [FEHLER] Herunterladen fehlgeschlagen. Bitte Internetverbindung pruefen.
@@ -67,7 +69,7 @@ echo        -^> Skripte erfolgreich platziert!
 echo.
 
 :: --- 3. WEBSEITEN-VERKNUEPFUNGEN ---
-echo [3/4] Erstelle Webseiten-Verknuepfungen...
+echo [3/5] Erstelle Webseiten-Verknuepfungen...
 if not exist "%ICON_DIR%" mkdir "%ICON_DIR%"
 
 :: Tinkercad (mit eigenem Icon)
@@ -93,8 +95,18 @@ echo IconIndex=0 >> "%DESKTOP_PATH%\Tuefteln Start.url"
 echo IconFile=%EDGE_ICON% >> "%DESKTOP_PATH%\Tuefteln Start.url"
 echo.
 
-:: --- 4. AUFRAEUMEN ---
-echo [4/4] Raeume temporaere Dateien auf...
+:: --- 4. ARDUINO VERKNUEPFUNG WIEDERHERSTELLEN ---
+echo [4/5] Pruefe Arduino-Installation und erstelle Verknuepfung...
+if exist "%ARDUINO_EXE%" (
+    powershell -command "$wshell = New-Object -ComObject WScript.Shell; $shortcut = $wshell.CreateShortcut('%DESKTOP_PATH%\Arduino IDE.lnk'); $shortcut.TargetPath = '%ARDUINO_EXE%'; $shortcut.Save()"
+    echo        -^> Desktop-Verknuepfung erfolgreich wiederhergestellt!
+) else (
+    echo        -^> [INFO] Arduino IDE konnte nicht gefunden werden. Verknuepfung uebersprungen.
+)
+echo.
+
+:: --- 5. AUFRAEUMEN ---
+echo [5/5] Raeume temporaere Dateien auf...
 if exist "%TEMP_ZIP%" del "%TEMP_ZIP%"
 if exist "%TEMP_EXTRACT%" rmdir /S /Q "%TEMP_EXTRACT%"
 
@@ -106,7 +118,6 @@ echo.
 echo Starte nun automatisch die Library-Installation...
 echo --------------------------------------------------------
 
-:: --- 5. LIBRARIES INSTALLIEREN ---
 :: Führe das Installations-Skript direkt vom Desktop aus
 if exist "%DESKTOP_PATH%\AlleLibrariesInstallieren.bat" (
     call "%DESKTOP_PATH%\AlleLibrariesInstallieren.bat"
