@@ -1,6 +1,37 @@
 @echo off
 setlocal enabledelayedexpansion
 
+:: --- 0. AUTO-UPDATE FUNKTION ---
+:: Wenn das Skript sich selbst mit dem Flag "--updated" neu gestartet hat, ueberspringt es diesen Teil
+if "%~1"=="--updated" goto :StartSetup
+
+echo ========================================================
+echo   Pruefe auf Skript-Updates auf GitHub...
+echo ========================================================
+:: URL zur "Raw" Version DIESES Skripts auf GitHub
+set "SCRIPT_URL=https://raw.githubusercontent.com/tueftelPark/Skripte/main/SetupLaptops.bat"
+
+:: Lade die allerneueste Version als temporaere Datei neben das aktuelle Skript
+curl -L -s -o "%~f0.tmp" "!SCRIPT_URL!"
+
+if %errorlevel% equ 0 (
+    :: Ueberschreibe die eigene, gerade ausgefuehrte Datei mit der neuen Version
+    move /y "%~f0.tmp" "%~f0" >nul
+    echo   Update erfolgreich! Starte neueste Version...
+    echo ========================================================
+    echo.
+    :: Starte das aktualisierte Skript neu und uebergebe das "--updated" Flag
+    "%~f0" --updated
+    :: Beende die alte Version sofort
+    exit /b
+) else (
+    echo   [FEHLER] Update fehlgeschlagen (Kein Internet?). 
+    echo   Starte die lokal gespeicherte Version...
+    echo ========================================================
+    echo.
+)
+
+:StartSetup
 echo ========================================================
 echo   TueftelPark - Initiales Laptop Setup (Vollautomatisch)
 echo ========================================================
@@ -59,7 +90,7 @@ echo.
 echo [5/7] Erstelle Webseiten-Verknuepfungen...
 if not exist "%ICON_DIR%" mkdir "%ICON_DIR%"
 
-:: Tinkercad (Hat ein klassisches Favicon)
+:: Tinkercad
 echo        -^> Tinkercad
 curl -L -s -o "%ICON_DIR%\tinkercad.ico" "https://www.tinkercad.com/favicon.ico"
 (
@@ -69,7 +100,7 @@ curl -L -s -o "%ICON_DIR%\tinkercad.ico" "https://www.tinkercad.com/favicon.ico"
     echo IconFile=%ICON_DIR%\tinkercad.ico
 ) > "%DESKTOP_PATH%\Tinkercad.url"
 
-:: Tuefteln Feedback (Nutzt DuckDuckGo Service fuer echtes .ico Format)
+:: Tuefteln Feedback
 echo        -^> Tuefteln Feedback
 curl -L -s -o "%ICON_DIR%\tuefteln.ico" "https://icons.duckduckgo.com/ip3/www.tuefteln.com.ico"
 (
