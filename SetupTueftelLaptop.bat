@@ -6,35 +6,20 @@ echo   TueftelPark - Initiales Laptop Setup (Vollautomatisch)
 echo ========================================================
 echo.
 
-:: --- ADMIN-RECHTE PRUEFEN ---
-net session >nul 2>&1
-if %errorLevel% neq 0 (
-    echo [FEHLER] Fehlende Administrator-Rechte!
-    echo.
-    echo Damit die Arduino IDE installiert werden kann, muss dieses
-    echo Skript als Administrator gestartet werden.
-    echo.
-    echo Bitte schliesse dieses Fenster, mache einen Rechtsklick auf
-    echo die Datei und waehle "Als Administrator ausfuehren".
-    echo ========================================================
-    pause
-    exit /b
-)
-
 :: Pfade definieren
 set "REPO_URL=https://github.com/tueftelPark/Skripte/archive/refs/heads/main.zip"
 set "TEMP_ZIP=%TEMP%\TueftelSkripte.zip"
 set "TEMP_EXTRACT=%TEMP%\TueftelSkripte_Extract"
 set "DESKTOP_PATH=%USERPROFILE%\Desktop"
 
-:: --- 1. ARDUINO IDE INSTALLIEREN ---
+:: --- 1. ARDUINO IDE INSTALLIEREN (Ohne Admin-Rechte) ---
 echo [1/5] Pruefe und installiere Arduino IDE...
 echo        Das kann je nach Internetgeschwindigkeit dauern.
 echo        Download-Fortschritt wird unten angezeigt...
 echo.
 
-:: Korrigierte ID (ArduinoSA.IDE.stable) und Ausgabe bleibt sichtbar
-winget install --id ArduinoSA.IDE.stable --exact --accept-package-agreements --accept-source-agreements
+:: Parameter --scope user zwingt die Installation in das Benutzerprofil (kein Admin noetig)
+winget install --id ArduinoSA.IDE.stable --exact --scope user --accept-package-agreements --accept-source-agreements
 
 if %errorlevel% neq 0 (
     echo.
