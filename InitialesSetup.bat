@@ -30,7 +30,6 @@ powershell -command "Expand-Archive -Path '%TEMP_ZIP%' -DestinationPath '%TEMP_E
 
 :: 3. Kopieren (.bat Dateien auf den Desktop)
 echo [3/3] Platziere alle .bat Dateien auf dem Desktop...
-:: Der Befehl "for /R" durchsucht den Temp-Ordner und alle Unterordner nach .bat Dateien
 for /R "%TEMP_EXTRACT%" %%F in (*.bat) do (
     copy "%%F" "%DESKTOP_PATH%\" /Y >nul
 )
@@ -43,8 +42,16 @@ if exist "%TEMP_EXTRACT%" rmdir /S /Q "%TEMP_EXTRACT%"
 
 echo.
 echo ========================================================
-echo   FERTIG! 
-echo   Alle Skripte wurden erfolgreich auf den Desktop 
-echo   kopiert.
+echo   Skripte erfolgreich auf den Desktop kopiert!
 echo ========================================================
-pause
+echo.
+echo Starte nun automatisch die Library-Installation...
+echo --------------------------------------------------------
+
+:: 5. Führe das Installations-Skript direkt vom Desktop aus
+if exist "%DESKTOP_PATH%\AlleLibrariesInstallieren.bat" (
+    call "%DESKTOP_PATH%\AlleLibrariesInstallieren.bat"
+) else (
+    echo [FEHLER] Die Datei AlleLibrariesInstallieren.bat wurde nicht auf dem Desktop gefunden.
+    pause
+)
