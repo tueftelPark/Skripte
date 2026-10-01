@@ -106,11 +106,11 @@ echo.
 echo [3/10] Erstelle Webseiten-Verknuepfungen...
 if not exist "%ICON_DIR%" mkdir "%ICON_DIR%"
 
-:: Tinkercad (mit eigenem Icon)
+:: Tinkercad (mit eigenem Icon) - fuehrt direkt zum Beitritt in die Tinkercad-Klasse
 echo        -^> Tinkercad
 curl -fsSL -o "%ICON_DIR%\tinkercad.ico" "https://www.tinkercad.com/favicon.ico"
 echo [InternetShortcut] > "%DESKTOP_PATH%\Tinkercad.url"
-echo URL=https://www.tinkercad.com/ >> "%DESKTOP_PATH%\Tinkercad.url"
+echo URL=https://www.tinkercad.com/joinclass/DLFXZMAX37MZ >> "%DESKTOP_PATH%\Tinkercad.url"
 echo IconIndex=0 >> "%DESKTOP_PATH%\Tinkercad.url"
 echo IconFile=%ICON_DIR%\tinkercad.ico >> "%DESKTOP_PATH%\Tinkercad.url"
 

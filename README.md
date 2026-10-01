@@ -20,7 +20,7 @@ Die Logik steckt in [`Einrichtung/NeuerLaptop.ps1`](Einrichtung/NeuerLaptop.ps1)
 Die Setup-Skripte liegen **nicht** auf dem Schüler-Desktop, sondern auf jedem eingerichteten Laptop unter **Dokumente → TueftelPark Skripte** (`SETUP.bat`, `FULL_RESET.bat`, `AlleLibrariesInstallieren.bat`). Jeder Lauf von SETUP oder FULL_RESET bringt sie dort auf den neuesten Stand. Alternativ hier herunterladen:
 
 - **Initiales Setup:** [FULL_RESET Skript hier downloaden](FULL_RESET.bat)
-  Leert den Desktop, installiert die neueste Arduino IDE und Git, legt die Kurs-Skripte und die Verknüpfungen zu www.tinkercad.com, www.tuefteln.com/feedback und www.tuefteln.com/start auf den Desktop und installiert alle Arduino-Libraries.
+  Leert den Desktop, installiert die neueste Arduino IDE und Git, legt die Kurs-Skripte und die Verknüpfungen zur Tinkercad-Klasse (www.tinkercad.com/joinclass/DLFXZMAX37MZ), www.tuefteln.com/feedback und www.tuefteln.com/start auf den Desktop und installiert alle Arduino-Libraries.
 - **Vor jedem Kurs:** [Setup Skript hier downloaden](SETUP.bat)
   Dasselbe ohne Neuinstallation der Arduino IDE. Git wird nur installiert, falls es noch fehlt.
 
