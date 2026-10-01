@@ -127,6 +127,10 @@ echo [InternetShortcut] > "%DESKTOP_PATH%\Tuefteln Start.url"
 echo URL=https://www.tuefteln.com/start >> "%DESKTOP_PATH%\Tuefteln Start.url"
 echo IconIndex=0 >> "%DESKTOP_PATH%\Tuefteln Start.url"
 echo IconFile=%EDGE_ICON% >> "%DESKTOP_PATH%\Tuefteln Start.url"
+:: Taskleiste aufraeumen: diese Apps loesen (sie bleiben installiert). Laeuft ueber
+:: das Kontextmenue der App-Liste ("Von Taskleiste loesen" bzw. "Unpin from taskbar"). Ohne den Alias %%, weil cmd Prozentzeichen auswertet.
+echo        -^> Taskleiste: Store, Outlook, Copilot und Lenovo-Apps loesen
+powershell -NoProfile -Command "$apps = (New-Object -ComObject Shell.Application).NameSpace('shell:::{4234d49b-0245-4df3-b780-3893943456e1}').Items(); $apps | Where-Object { $_.Name -eq 'Microsoft Store' -or $_.Name -like 'Outlook*' -or $_.Name -like '*Copilot*' -or $_.Name -like 'Lenovo Vantage*' -or $_.Name -like '*Smart Meeting*' } | ForEach-Object { $_.Verbs() | Where-Object { $_.Name.Replace('&','') -match '^Von Taskleiste|Unpin from taskbar' } | ForEach-Object { $_.DoIt() } }" >nul 2>&1
 echo.
 
 :: --- 4. ARDUINO IDE HERUNTERLADEN ---

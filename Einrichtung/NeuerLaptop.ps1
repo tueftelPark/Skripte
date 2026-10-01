@@ -283,6 +283,37 @@ if (($AktivBis - $AktivVon) -gt 18 -or $AktivBis -le $AktivVon) {
 # ---------------- 5. Neue Benutzerprofile vorbereiten ----------------
 Schritt '5/5  Erste Anmeldung ins Schuelerkonto vorbereiten'
 
+# Taskleiste fuer neue Konten: Windows legt sie bei der ersten Anmeldung nach
+# einer Vorlage an (Lenovo hat dort Vantage, Smart Meeting usw. eingetragen).
+# Unsere Vorlage ersetzt die Standard-Pins (Replace) - angeheftet sind nur
+# Edge und Explorer; Store, Outlook, Copilot und Lenovo-Apps bleiben installiert,
+# aber nicht angeheftet. SETUP/FULL_RESET loesen sie zusaetzlich im laufenden Konto.
+$taskleiste = @'
+<?xml version="1.0" encoding="utf-8"?>
+<LayoutModificationTemplate
+    xmlns="http://schemas.microsoft.com/Start/2014/LayoutModification"
+    xmlns:defaultlayout="http://schemas.microsoft.com/Start/2014/FullDefaultLayout"
+    xmlns:start="http://schemas.microsoft.com/Start/2014/StartLayout"
+    xmlns:taskbar="http://schemas.microsoft.com/Start/2014/TaskbarLayout"
+    Version="1">
+  <CustomTaskbarLayoutCollection PinListPlacement="Replace">
+    <defaultlayout:TaskbarLayout>
+      <taskbar:TaskbarPinList>
+        <taskbar:DesktopApp DesktopApplicationID="MSEdge" />
+        <taskbar:DesktopApp DesktopApplicationID="Microsoft.Windows.Explorer" />
+      </taskbar:TaskbarPinList>
+    </defaultlayout:TaskbarLayout>
+  </CustomTaskbarLayoutCollection>
+</LayoutModificationTemplate>
+'@
+$taskleisteDatei = Join-Path $Ordner 'TaskbarLayoutModification.xml'
+[IO.File]::WriteAllText($taskleisteDatei, ($taskleiste -replace "`r?`n", "`r`n"), [Text.Encoding]::UTF8)
+$explorerKey = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer'
+$bisher = (Get-ItemProperty $explorerKey -Name LayoutXMLPath -ErrorAction SilentlyContinue).LayoutXMLPath
+if ($bisher -and $bisher -ne $taskleisteDatei) { Info "Bisherige Taskleisten-Vorlage (Lenovo): $bisher" }
+Set-Reg 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer' 'LayoutXMLPath' $taskleisteDatei 'REG_EXPAND_SZ'
+Ok 'Taskleiste fuer neue Konten: nur Edge und Explorer angeheftet.'
+
 # Startdatei fuer die erste Anmeldung. Laedt FULL_RESET.bat immer frisch von
 # GitHub, damit auch ein Laptop, der erst in Wochen ausgepackt wird, den
 # aktuellen Stand bekommt. Labels/goto sind hier ok: wir schreiben CRLF.
