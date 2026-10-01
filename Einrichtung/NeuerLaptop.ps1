@@ -35,8 +35,12 @@ $WegApps = @(
     'Microsoft.OutlookForWindows', 'Microsoft.Windows.DevHome', 'Microsoft.549981C3F5F10',
     'MicrosoftTeams', 'MSTeams', 'Clipchamp.Clipchamp',
     '*CandyCrush*', '*king.com*', '*Spotify*', '*Disney*', '*TikTok*', '*Facebook*',
-    '*Instagram*', '*LinkedIn*', '*AmazonVideo*', '*Netflix*', '*McAfee*'
+    '*Instagram*', '*LinkedIn*', '*AmazonVideo*', '*Netflix*', '*McAfee*',
+    '*SmartMeeting*'
 )
+# Klassische Programme (Systemsteuerung > Programme), die still per winget
+# entfernt werden. McAfee hat einen eigenen Ablauf weiter unten.
+$WegProgramme = @('*Smart Meeting*', '*SmartMeeting*')
 # ------------------------------------------------
 
 $ErrorActionPreference = 'Stop'
@@ -205,6 +209,19 @@ $entfernt = $entfernt | Sort-Object -Unique
 if ($entfernt) { Ok "Entfernt: $($entfernt -join ', ')" } else { Info 'Keine der aufgelisteten Apps gefunden.' }
 $nichtEntfernbar = $nichtEntfernbar | Sort-Object -Unique | Where-Object { $entfernt -notcontains $_ }
 if ($nichtEntfernbar) { Info "Nicht entfernbar (von Windows geschuetzt): $($nichtEntfernbar -join ', ')" }
+
+foreach ($muster in $WegProgramme) {
+    foreach ($prog in (Get-Programme $muster)) {
+        if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
+            Warnung "$($prog.DisplayName) gefunden, aber winget fehlt - bitte von Hand deinstallieren."
+            continue
+        }
+        Info "Deinstalliere $($prog.DisplayName) ..."
+        Leise winget @('uninstall', '--name', $prog.DisplayName, '--exact', '--silent', '--accept-source-agreements', '--disable-interactivity')
+        if (Get-Programme $prog.DisplayName) { Warnung "$($prog.DisplayName) liess sich nicht still entfernen - bitte von Hand deinstallieren." }
+        else { Ok "$($prog.DisplayName) entfernt." }
+    }
+}
 
 # McAfee: zuerst still per winget, wenn das nicht reicht das offizielle Removal Tool.
 $mcafee = Get-Programme '*McAfee*'

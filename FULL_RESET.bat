@@ -136,7 +136,21 @@ echo.
 :: --- 4. ARDUINO IDE HERUNTERLADEN ---
 :: Bewusst VOR dem Deinstallieren: scheitert der Download, bleibt die alte Version stehen.
 echo [4/10] Ermittle aktuellste Arduino IDE Version...
-for /f "delims=" %%I in ('powershell -command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $release = Invoke-RestMethod -Uri 'https://api.github.com/repos/arduino/arduino-ide/releases/latest'; ($release.assets | ? { $_.name -match 'Windows_64bit\.exe$' }).browser_download_url"') do set "DOWNLOAD_URL=%%I"
+:: Ist die neueste Version schon installiert, werden die Schritte 4-7 uebersprungen -
+:: sonst wuerde jeder Lauf die IDE grundlos deinstallieren und neu installieren.
+:: PowerShell liefert "AKTUELL|<Version>" oder "NEU|<Download-Link>".
+set "ARDUINO_STATUS="
+set "ARDUINO_INFO="
+for /f "tokens=1,* delims=|" %%A in ('powershell -NoProfile -command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $release = Invoke-RestMethod -Uri 'https://api.github.com/repos/arduino/arduino-ide/releases/latest'; $neu = $release.tag_name.TrimStart('v'); $exe = '%ARDUINO_EXE%'; $alt = ''; if (Test-Path -LiteralPath $exe) { $alt = (Get-Item -LiteralPath $exe).VersionInfo.ProductVersion }; if ($alt -and ($alt -eq $neu -or $alt.StartsWith($neu + '.'))) { 'AKTUELL|' + $alt } else { 'NEU|' + ($release.assets | ? { $_.name -match 'Windows_64bit\.exe$' }).browser_download_url }"') do (
+    set "ARDUINO_STATUS=%%A"
+    set "ARDUINO_INFO=%%B"
+)
+if "!ARDUINO_STATUS!"=="AKTUELL" (
+    echo        -^> Arduino IDE !ARDUINO_INFO! ist schon die neueste Version - keine Neuinstallation.
+    echo.
+    goto arduino_fertig
+)
+set "DOWNLOAD_URL=!ARDUINO_INFO!"
 
 if "!DOWNLOAD_URL!"=="" (
     echo [FEHLER] Konnte Download-Link nicht ermitteln. Bitte Internet pruefen.
@@ -184,6 +198,7 @@ echo        Das Installationsfenster bleibt unsichtbar. Bitte kurz warten...
 start /wait "" "%SETUP_EXE%" /S
 echo        -^> Installation abgeschlossen!
 echo.
+:arduino_fertig
 
 :: --- 8. GIT (fuer die Kurs-Skripte) ---
 :: Die Kurs-Skripte rufen Git ueber den festen Pfad GIT_EXE auf, PATH bleibt unveraendert.
