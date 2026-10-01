@@ -12,7 +12,9 @@ set "SCRIPT_URL=https://raw.githubusercontent.com/tueftelPark/ArduinoKomponenten
 set "TEMP_SCRIPT=%TEMP%\InstallLibraries_Temp.bat"
 
 :: 1. Nur das Skript herunterladen (via curl)
-curl -L -s -o "%TEMP_SCRIPT%" "%SCRIPT_URL%"
+:: -f: bei HTTP-Fehlern (404, 500) mit Fehlercode abbrechen, statt die Fehlerseite
+::     zu speichern - sonst wuerde unten die Fehlerseite als Batch ausgefuehrt.
+curl -fsSL -o "%TEMP_SCRIPT%" "%SCRIPT_URL%"
 
 if %errorlevel% neq 0 (
     echo.
