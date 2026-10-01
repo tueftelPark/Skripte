@@ -96,6 +96,24 @@ Write-Host "  Geraetename:  $env:COMPUTERNAME"
 # ---------------- 0. Fragen ----------------
 Schritt '0/5  Angaben (danach laeuft alles allein)'
 
+$NeuerName = Read-Host "  Neuer Geraetename, z.B. TP-LAPTOP-07 (Enter = '$env:COMPUTERNAME' behalten)"
+if (-not [string]::IsNullOrWhiteSpace($NeuerName)) {
+    if ($NeuerName -notmatch '^[A-Za-z0-9-]{1,15}$') {
+        Warnung "Geraetename '$NeuerName' ungueltig (nur Buchstaben, Ziffern, Bindestrich, max. 15 Zeichen) - bleibt unveraendert."
+        $NeuerName = ''
+    }
+}
+$Geraetenamen = @($env:COMPUTERNAME, $NeuerName) | Where-Object { $_ }
+
+# Reste eines frueheren Laufs aufraeumen: ein von uns angelegtes, nie benutztes
+# Konto, das wie das Geraet heisst (siehe unten), ist unbrauchbar.
+foreach ($alt in (Get-LocalUser | Where-Object { $_.Description -eq 'TueftelPark Kurskonto' -and $Geraetenamen -contains $_.Name })) {
+    if (-not (Get-CimInstance Win32_UserProfile | Where-Object { $_.SID -eq $alt.SID.Value })) {
+        Remove-LocalUser -SID $alt.SID
+        Info "Unbrauchbares Konto '$($alt.Name)' aus einem frueheren Lauf entfernt (hiess wie das Geraet)."
+    }
+}
+
 do {
     $eingabe = Read-Host "  Name des Schuelerkontos (Enter = $StandardKonto)"
     if ([string]::IsNullOrWhiteSpace($eingabe)) { $eingabe = $StandardKonto }
@@ -104,6 +122,11 @@ do {
     $gueltig = $eingabe -match '^[A-Za-z0-9][A-Za-z0-9._-]{0,19}$'
     if (-not $gueltig) {
         Write-Host '  Nur Buchstaben ohne Umlaute, Ziffern, Punkt, Bindestrich und Unterstrich, hoechstens 20 Zeichen.' -ForegroundColor Yellow
+    } elseif ($Geraetenamen -contains $eingabe) {
+        # Windows verwechselt das Konto sonst mit dem Geraet selbst (so gescheitert
+        # auf CAD98 mit Konto "cad98"); die Ersteinrichtung verbietet es ebenso.
+        Write-Host "  Das Konto darf nicht wie das Geraet heissen ('$eingabe'). Z.B. '$eingabe-kurs' oder 'Tuefteln' nehmen." -ForegroundColor Yellow
+        $gueltig = $false
     }
 } until ($gueltig)
 $Konto = $eingabe
@@ -114,22 +137,22 @@ if (-not $kontoObjekt) {
     $Passwort = Read-Host "  Passwort fuer '$Konto' (Enter = kein Passwort)" -AsSecureString
 }
 
-$NeuerName = Read-Host "  Neuer Geraetename, z.B. TP-LAPTOP-07 (Enter = '$env:COMPUTERNAME' behalten)"
-if (-not [string]::IsNullOrWhiteSpace($NeuerName)) {
-    if ($NeuerName -notmatch '^[A-Za-z0-9-]{1,15}$') {
-        Warnung "Geraetename '$NeuerName' ungueltig (nur Buchstaben, Ziffern, Bindestrich, max. 15 Zeichen) - bleibt unveraendert."
-        $NeuerName = ''
-    }
-}
-
 # ---------------- 1. Schuelerkonto ----------------
 Schritt "1/5  Schuelerkonto '$Konto'"
+# Gruppen ueber die SID statt ueber den Namen: auf Deutsch heissen sie "Benutzer"
+# und "Administratoren". Auch das Mitglied geben wir als SID an - ein Name kann
+# mehrdeutig sein.
+$benutzerGruppe = Get-LocalGroup -SID 'S-1-5-32-545'
+$adminGruppe    = Get-LocalGroup -SID 'S-1-5-32-544'
+# Get-LocalGroupMember scheitert bei verwaisten Eintraegen in der Gruppe - dann leer
+function Ist-Mitglied($Gruppe, $Sid) {
+    $mitglieder = try { Get-LocalGroupMember -Group $Gruppe } catch { @() }
+    [bool]($mitglieder | Where-Object { $_.SID -eq $Sid })
+}
+
 if ($kontoObjekt) {
-    Info "Konto gibt es schon - wird nicht veraendert."
-    $adminGruppe = Get-LocalGroup -SID 'S-1-5-32-544'
-    # Get-LocalGroupMember scheitert bei verwaisten Eintraegen in der Gruppe - dann ueberspringen
-    $mitglieder = try { Get-LocalGroupMember -Group $adminGruppe } catch { @() }
-    if ($mitglieder | Where-Object { $_.SID -eq $kontoObjekt.SID }) {
+    Info "Konto gibt es schon - Name und Passwort bleiben unveraendert."
+    if (Ist-Mitglied $adminGruppe $kontoObjekt.SID) {
         Warnung "Konto '$Konto' hat Adminrechte. Fuer ein Schuelerkonto unbedingt entfernen."
     }
     if (Get-CimInstance Win32_UserProfile | Where-Object { $_.SID -eq $kontoObjekt.SID.Value }) {
@@ -138,14 +161,18 @@ if ($kontoObjekt) {
 } else {
     $beschreibung = 'TueftelPark Kurskonto'
     if ($Passwort.Length -eq 0) {
-        New-LocalUser -Name $Konto -NoPassword -Description $beschreibung | Out-Null
+        $kontoObjekt = New-LocalUser -Name $Konto -NoPassword -Description $beschreibung
     } else {
-        New-LocalUser -Name $Konto -Password $Passwort -Description $beschreibung | Out-Null
+        $kontoObjekt = New-LocalUser -Name $Konto -Password $Passwort -Description $beschreibung
     }
-    Set-LocalUser -Name $Konto -PasswordNeverExpires $true
-    # Gruppe ueber die SID statt ueber den Namen: auf Deutsch heisst sie "Benutzer".
-    Add-LocalGroupMember -Group (Get-LocalGroup -SID 'S-1-5-32-545') -Member $Konto
+    Set-LocalUser -SID $kontoObjekt.SID -PasswordNeverExpires $true
     Ok "Standardkonto ohne Adminrechte angelegt."
+}
+# Auch bei einem bestehenden Konto: ohne die Gruppe "Benutzer" kann man sich
+# nicht anmelden (z.B. wenn ein frueherer Lauf genau hier abgebrochen ist).
+if (-not (Ist-Mitglied $benutzerGruppe $kontoObjekt.SID)) {
+    Add-LocalGroupMember -Group $benutzerGruppe -Member $kontoObjekt.SID.Value
+    Info "Zur Gruppe '$($benutzerGruppe.Name)' hinzugefuegt."
 }
 
 if ($NeuerName -and $NeuerName -ne $env:COMPUTERNAME) {
