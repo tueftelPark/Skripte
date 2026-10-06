@@ -39,6 +39,6 @@ Auf dem Desktop liegt pro Kurs ein Skript (z.B. `Sortieranlage.bat`). Es schlies
 | `AlleLibrariesInstallieren.bat` | wird von den Setup-Skripten aufgerufen; holt den Installer aus [ArduinoKomponentenLibrariesSammlung](https://github.com/tueftelPark/ArduinoKomponentenLibrariesSammlung) |
 | `Kurse/` | ein Skript pro Kurs — **nur diese** kommen auf den Desktop |
 
-**Neuen Kurs hinzufügen:** ein bestehendes Skript in `Kurse/` kopieren und den Kursnamen überall ersetzen (er steht in `TARGET`, `REPO` und in den Meldungen). Dateinamen ohne Umlaute, Zeilenenden CRLF.
+**Neuen Kurs hinzufügen:** ein bestehendes Skript in `Kurse/` kopieren, so benennen wie das GitHub-Repository und oben die Zeile `set "KURS=..."` anpassen – der Rest leitet sich davon ab. Dateinamen ohne Umlaute, Zeilenenden CRLF.
 
 Git liegt als portable Version (MinGit) unter `%LOCALAPPDATA%\TueftelPark\MinGit` und wird von den Kurs-Skripten direkt über diesen Pfad aufgerufen.
