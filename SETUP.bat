@@ -8,7 +8,7 @@ echo.
 
 :: --- 0. WARNHINWEIS & BESTAETIGUNG ---
 echo   !!! ACHTUNG - DATENVERLUST !!!
-echo   Dieses Skript leert als Erstes den kompletten Desktop!
+echo   Dieses Skript leert den kompletten Desktop!
 echo   Alle bisherigen Dateien, Ordner und Verknuepfungen,
 echo   die auf diesem Bildschirm liegen, werden geloescht.
 echo.
@@ -48,28 +48,44 @@ set "ARDUINO_EXE=%LOCALAPPDATA%\Programs\Arduino IDE\Arduino IDE.exe"
 if exist "%TEMP_EXTRACT%" rmdir /S /Q "%TEMP_EXTRACT%"
 if exist "%SELBST_NEU%" del "%SELBST_NEU%"
 
-:: --- 1. DESKTOP LEEREN (Tabula Rasa) ---
-echo [1/6] Leere den aktuellen Desktop...
+:: --- 1. SKRIPTE HERUNTERLADEN ---
+:: Bewusst VOR dem Leeren des Desktops: ohne Internet bricht das Skript hier ab
+:: und der Desktop bleibt, wie er ist - samt den Kurs-Skripten vom letzten Mal.
+echo [1/6] Lade Skripte-Repository von GitHub herunter...
+curl -fsSL -o "%TEMP_ZIP%" "%REPO_URL%"
+if %errorlevel% neq 0 (
+    echo [FEHLER] Herunterladen fehlgeschlagen. Bitte Internetverbindung pruefen.
+    echo          Der Desktop wurde nicht veraendert.
+    if exist "%TEMP_ZIP%" del "%TEMP_ZIP%"
+    pause
+    exit /b
+)
+echo        Entpacke...
+powershell -command "Expand-Archive -Path '%TEMP_ZIP%' -DestinationPath '%TEMP_EXTRACT%' -Force"
+:: Nur weiter, wenn die Skripte wirklich entpackt sind (z. B. nicht bei kaputtem Download).
+set "ENTPACKT="
+if exist "%TEMP_EXTRACT%" for /R "%TEMP_EXTRACT%" %%F in (SETUP.bat) do if exist "%%F" set "ENTPACKT=1"
+if not defined ENTPACKT (
+    echo [FEHLER] Die heruntergeladenen Skripte konnten nicht entpackt werden.
+    echo          Der Desktop wurde nicht veraendert. Bitte Skript erneut ausfuehren.
+    if exist "%TEMP_ZIP%" del "%TEMP_ZIP%"
+    if exist "%TEMP_EXTRACT%" rmdir /S /Q "%TEMP_EXTRACT%"
+    pause
+    exit /b
+)
+echo        -^> Skripte bereit.
+echo.
+
+:: --- 2. DESKTOP LEEREN (Tabula Rasa) UND SKRIPTE PLATZIEREN ---
+echo [2/6] Leere den aktuellen Desktop...
 for %%F in ("%DESKTOP_PATH%\*") do (
     if /I not "%%~nxF"=="%~nx0" del /Q /F "%%F" >nul 2>&1
 )
 for /D %%D in ("%DESKTOP_PATH%\*") do (
     rmdir /S /Q "%%D" >nul 2>&1
 )
-echo        -^> Desktop wurde aufgeraeumt!
-echo.
-
-:: --- 2. SKRIPTE HERUNTERLADEN & PLATZIEREN ---
-echo [2/6] Lade Skripte-Repository von GitHub herunter...
-curl -fsSL -o "%TEMP_ZIP%" "%REPO_URL%"
-if %errorlevel% neq 0 (
-    echo [FEHLER] Herunterladen fehlgeschlagen. Bitte Internetverbindung pruefen.
-    pause
-    exit /b
-)
-
-echo        Entpacke und kopiere die Kurs-Skripte auf den Desktop...
-powershell -command "Expand-Archive -Path '%TEMP_ZIP%' -DestinationPath '%TEMP_EXTRACT%' -Force"
+echo        -^> Desktop wurde aufgeraeumt.
+echo        Kopiere die Kurs-Skripte auf den Desktop...
 :: Auf den Desktop kommen NUR die Skripte aus dem Ordner Kurse\. SETUP, FULL_RESET,
 :: AlleLibrariesInstallieren und NanoErkennung landen in Dokumente\TueftelPark Skripte - griffbereit fuer
 :: die Kursleitung, aber nicht dort, wo im Kurs jemand aus Versehen draufklickt.

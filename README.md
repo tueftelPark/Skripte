@@ -24,7 +24,7 @@ Die Setup-Skripte liegen **nicht** auf dem Schüler-Desktop, sondern auf jedem e
 - **Vor jedem Kurs:** [Setup Skript hier downloaden](SETUP.bat)
   Dasselbe ohne Neuinstallation der Arduino IDE. Git wird nur installiert, falls es noch fehlt.
 
-Beide Skripte leeren den Desktop komplett und fragen vorher nach.
+Beide Skripte leeren den Desktop komplett und fragen vorher nach. Geleert wird erst, wenn die Skripte erfolgreich heruntergeladen sind – ohne Internet bleibt der Desktop, wie er ist.
 
 ## Für die Schüler:innen
 
