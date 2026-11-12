@@ -7,17 +7,23 @@ echo ========================================================
 echo.
 
 :: --- 0. WARNHINWEIS & BESTAETIGUNG ---
-echo   !!! ACHTUNG - DATENVERLUST !!!
-echo   Dieses Skript leert den kompletten Desktop!
-echo   Alle bisherigen Dateien, Ordner und Verknuepfungen,
-echo   die auf diesem Bildschirm liegen, werden geloescht.
-echo.
-CHOICE /C JN /M "Bist du sicher, dass du den Desktop JETZT neu aufsetzen willst?"
-if errorlevel 2 (
+:: Mit /neu ohne Rueckfrage - so startet sich SETUP selbst in der neuesten Version,
+:: nachdem die Rueckfrage schon beantwortet ist.
+if /I "%~1"=="/neu" (
+    echo [INFO] Neueste Version von SETUP gestartet.
+) else (
+    echo   ACHTUNG - DATENVERLUST
+    echo   Dieses Skript leert den kompletten Desktop^^!
+    echo   Alle bisherigen Dateien, Ordner und Verknuepfungen,
+    echo   die auf diesem Bildschirm liegen, werden geloescht.
     echo.
-    echo [INFO] Setup wurde abgebrochen. Es wurde nichts veraendert.
-    pause
-    exit /b
+    CHOICE /C JN /M "Bist du sicher, dass du den Desktop JETZT neu aufsetzen willst?"
+    if errorlevel 2 (
+        echo.
+        echo [INFO] Setup wurde abgebrochen. Es wurde nichts veraendert.
+        pause
+        exit /b
+    )
 )
 echo.
 echo ========================================================
@@ -32,6 +38,8 @@ set "TEMP_EXTRACT=%TEMP%\TueftelSkripte_Extract"
 :: Setup-Skripte fuer die Kursleitung - auch im Schuelerkonto griffbereit, aber nicht auf dem Desktop
 set "SKRIPT_DIR=%USERPROFILE%\Documents\TueftelPark Skripte"
 set "SELBST_NEU=%TEMP%\TueftelSelbstUpdate.bat"
+:: Hierhin wird eine neuere Version dieses Skripts kopiert und von dort gestartet
+set "AKTUELL_DIR=%TEMP%\TueftelAktuell"
 set "DESKTOP_PATH=%USERPROFILE%\Desktop"
 :: Dauerhafter Ordner fuer die Web-Icons
 set "ICON_DIR=%LOCALAPPDATA%\TueftelPark"
@@ -74,6 +82,33 @@ if not defined ENTPACKT (
     exit /b
 )
 echo        -^> Skripte bereit.
+
+:: Gibt es eine neuere Version dieses Skripts? Dann gleich die neue ausfuehren -
+:: so reicht immer ein Durchlauf. Sie laeuft als Kopie aus dem TEMP-Ordner (die Datei
+:: hier wird gleich ueberschrieben) und bekommt /neu mit: keine zweite Rueckfrage und
+:: keine erneute Pruefung. Der ganze Block wird vorab eingelesen - nach der Rueckkehr
+:: liest diese alte Version also nichts mehr aus ihrer ueberschriebenen Datei.
+if /I not "%~1"=="/neu" (
+    set "NEUE_VERSION="
+    for /R "%TEMP_EXTRACT%" %%F in (SETUP.bat) do if exist "%%F" set "NEUE_VERSION=%%F"
+    if defined NEUE_VERSION (
+        fc /b "%~f0" "!NEUE_VERSION!" >nul 2>&1
+        if errorlevel 1 (
+            echo        -^> Es gibt eine neuere Version von SETUP - sie wird jetzt ausgefuehrt.
+            echo.
+            if exist "%AKTUELL_DIR%" rmdir /S /Q "%AKTUELL_DIR%"
+            mkdir "%AKTUELL_DIR%"
+            copy /Y "!NEUE_VERSION!" "%AKTUELL_DIR%\%~nx0" >nul
+            if exist "%AKTUELL_DIR%\%~nx0" (
+                if exist "%TEMP_ZIP%" del "%TEMP_ZIP%"
+                if exist "%TEMP_EXTRACT%" rmdir /S /Q "%TEMP_EXTRACT%"
+                call "%AKTUELL_DIR%\%~nx0" /neu
+                exit /b
+            )
+            echo        [INFO] Neue Version konnte nicht gestartet werden - diese laeuft weiter.
+        )
+    )
+)
 echo.
 
 :: --- 2. DESKTOP LEEREN (Tabula Rasa) UND SKRIPTE PLATZIEREN ---

@@ -17,7 +17,7 @@ Die Logik steckt in [`Einrichtung/NeuerLaptop.ps1`](Einrichtung/NeuerLaptop.ps1)
 
 ## Für die Kursleitung
 
-Die Setup-Skripte liegen **nicht** auf dem Schüler-Desktop, sondern auf jedem eingerichteten Laptop unter **Dokumente → TueftelPark Skripte** (`SETUP.bat`, `FULL_RESET.bat`, `AlleLibrariesInstallieren.bat`, `NanoErkennung.bat`). Jeder Lauf von SETUP oder FULL_RESET bringt sie dort auf den neuesten Stand. Alternativ hier herunterladen:
+Die Setup-Skripte liegen **nicht** auf dem Schüler-Desktop, sondern auf jedem eingerichteten Laptop unter **Dokumente → TueftelPark Skripte** (`SETUP.bat`, `FULL_RESET.bat`, `AlleLibrariesInstallieren.bat`, `NanoErkennung.bat`). Jeder Lauf von SETUP oder FULL_RESET bringt sie dort auf den neuesten Stand. Dabei prüfen SETUP und FULL_RESET gleich nach dem Download, ob es eine neuere Version von ihnen selbst gibt, und führen dann direkt diese aus – **ein Durchlauf reicht**. Alternativ hier herunterladen:
 
 - **Initiales Setup:** [FULL_RESET Skript hier downloaden](FULL_RESET.bat)
   Leert den Desktop, installiert die neueste Arduino IDE (nur wenn nicht schon aktuell) und Git, legt die Kurs-Skripte und die Verknüpfungen zur Tinkercad-Klasse (www.tinkercad.com/joinclass/DLFXZMAX37MZ), www.tuefteln.com/feedback und www.tuefteln.com/start auf den Desktop und installiert alle Arduino-Libraries.
