@@ -44,7 +44,7 @@ Auf dem Desktop liegt pro Kurs ein Skript (z.B. `Sortieranlage.bat`). Es schlies
 
 ## Nano-Klone als „Arduino Nano“ erkennen
 
-Nano-Klone haben einen allgemeinen USB-Chip (CP2102, CH340, …). Die Arduino IDE kann daran nicht erkennen, welches Board dahintersteckt, und zeigt „Unknown“. `NanoErkennung.bat` legt eine `boards.local.txt` neben die `boards.txt` der Arduino AVR Boards (`%LOCALAPPDATA%\Arduino15\packages\arduino\hardware\avr\<Version>\`) und ordnet diese Chips dem Arduino Nano zu. Danach steht im Board-Menü direkt „Arduino Nano“ auf dem richtigen Port.
+Nano-Klone haben einen allgemeinen USB-Chip (CP2102, CH340, …), der Seeeduino Nano aus dem Kurs LED Matrix einen CP2102N. Die Arduino IDE kann daran nicht erkennen, welches Board dahintersteckt, und zeigt „Unknown“. `NanoErkennung.bat` legt eine `boards.local.txt` neben die `boards.txt` der Arduino AVR Boards (`%LOCALAPPDATA%\Arduino15\packages\arduino\hardware\avr\<Version>\`) und ordnet diese Chips dem Arduino Nano zu. Danach steht im Board-Menü direkt „Arduino Nano“ auf dem richtigen Port.
 
 - Läuft am Ende von SETUP und FULL_RESET, darf beliebig oft laufen. Nach einem Update der AVR Boards (neuer Versionsordner) richtet der nächste SETUP-Lauf die Datei wieder ein.
 - Fehlen die AVR Boards noch, installiert das Skript sie über das arduino-cli der IDE.

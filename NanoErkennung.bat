@@ -1,7 +1,8 @@
 @echo off
 setlocal enabledelayedexpansion
 
-:: Nano-Klone haben einen allgemeinen USB-Chip (CP2102, CH340, ...). Daran erkennt
+:: Nano-Klone haben einen allgemeinen USB-Chip (CP2102, CH340, ...), der Seeeduino Nano
+:: aus dem Kurs LED Matrix z. B. einen CP2102N. Daran erkennt
 :: die Arduino IDE das Board nicht und zeigt "Unknown" - die Schueler:innen muessten
 :: dann selbst "Arduino Nano" heraussuchen. Eine boards.local.txt neben der
 :: boards.txt der Arduino AVR Boards ordnet diese Chips dem Arduino Nano zu.
@@ -80,7 +81,7 @@ exit /b
     echo # Angelegt von NanoErkennung.bat ^(TueftelPark Skripte^) - wird bei jedem SETUP ueberschrieben.
     echo # Nano-Klone mit allgemeinem USB-Chip als "Arduino Nano" erkennen statt als "Unknown".
     echo.
-    echo # Silicon Labs CP2102 / CP2102N
+    echo # Silicon Labs CP2102 / CP2102N - steckt im Seeeduino Nano ^(Kurs LED Matrix^)
     echo nano.upload_port.1.vid=0x10C4
     echo nano.upload_port.1.pid=0xEA60
     echo # WCH CH340
