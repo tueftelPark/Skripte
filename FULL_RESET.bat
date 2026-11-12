@@ -79,15 +79,15 @@ if %errorlevel% neq 0 (
 
 echo        Entpacke und kopiere die Kurs-Skripte auf den Desktop...
 powershell -command "Expand-Archive -Path '%TEMP_ZIP%' -DestinationPath '%TEMP_EXTRACT%' -Force"
-:: Auf den Desktop kommen NUR die Skripte aus dem Ordner Kurse\. SETUP, FULL_RESET und
-:: AlleLibrariesInstallieren landen in Dokumente\TueftelPark Skripte - griffbereit fuer
+:: Auf den Desktop kommen NUR die Skripte aus dem Ordner Kurse\. SETUP, FULL_RESET,
+:: AlleLibrariesInstallieren und NanoErkennung landen in Dokumente\TueftelPark Skripte - griffbereit fuer
 :: die Kursleitung, aber nicht dort, wo im Kurs jemand aus Versehen draufklickt.
 :: Laeuft dieses Skript selbst aus jenem Ordner, wird es nicht jetzt ueberschrieben
 :: (cmd liest Batch-Dateien zeilenweise), sondern erst in der letzten Zeile.
 if not exist "%SKRIPT_DIR%" mkdir "%SKRIPT_DIR%"
 set "KURS_ANZAHL=0"
 for /R "%TEMP_EXTRACT%" %%F in (*.bat) do (
-    for %%N in (SETUP.bat FULL_RESET.bat AlleLibrariesInstallieren.bat) do if /I "%%~nxF"=="%%N" (
+    for %%N in (SETUP.bat FULL_RESET.bat AlleLibrariesInstallieren.bat NanoErkennung.bat) do if /I "%%~nxF"=="%%N" (
         if /I "%SKRIPT_DIR%\%%N"=="%~f0" (
             copy "%%F" "%SELBST_NEU%" /Y >nul
         ) else (
@@ -256,6 +256,15 @@ if exist "%SKRIPT_DIR%\AlleLibrariesInstallieren.bat" (
     call "%SKRIPT_DIR%\AlleLibrariesInstallieren.bat"
 ) else (
     echo [FEHLER] AlleLibrariesInstallieren.bat wurde nicht gefunden.
+    pause
+)
+
+:: Nano-Klone in der Arduino IDE als "Arduino Nano" erkennen statt als "Unknown"
+echo --------------------------------------------------------
+if exist "%SKRIPT_DIR%\NanoErkennung.bat" (
+    call "%SKRIPT_DIR%\NanoErkennung.bat"
+) else (
+    echo [FEHLER] NanoErkennung.bat wurde nicht gefunden.
     pause
 )
 
