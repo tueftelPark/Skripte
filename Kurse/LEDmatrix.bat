@@ -76,4 +76,8 @@ if errorlevel 1 (
 :: dabei dieses Skript (Desktop\<Kurs>.bat) statt des Ordners und startet es
 :: endlos immer wieder neu.
 explorer.exe "%TARGET%"
+
+:: Kurs gleich starten: Nano-Erkennung, Arduino IDE mit der Uebung 01_Bild und den
+:: LED Matrix Editor im Browser. Mit call - LED_START.bat schliesst das Fenster selbst.
+if exist "%TARGET%\LED_START.bat" call "%TARGET%\LED_START.bat"
 exit
