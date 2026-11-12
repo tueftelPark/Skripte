@@ -128,9 +128,10 @@ for /D %%D in ("%DESKTOP_PATH%\*") do (
 )
 echo        -^> Desktop wurde aufgeraeumt.
 echo        Kopiere die Kurs-Skripte auf den Desktop...
-:: Auf den Desktop kommen NUR die Skripte aus dem Ordner Kurse\. SETUP, FULL_RESET,
-:: AlleLibrariesInstallieren und NanoErkennung landen in Dokumente\TueftelPark Skripte - griffbereit fuer
-:: die Kursleitung, aber nicht dort, wo im Kurs jemand aus Versehen draufklickt.
+:: Auf den Desktop kommen die Skripte aus dem Ordner Kurse\ und SETUP.bat (fragt vor dem
+:: Leeren des Desktops nach). SETUP, FULL_RESET, AlleLibrariesInstallieren und NanoErkennung
+:: landen ausserdem in Dokumente\TueftelPark Skripte - von dort ruft SETUP die anderen auf.
+:: Laeuft SETUP gerade vom Desktop, ist es dort schon die neueste Version (siehe oben).
 :: Laeuft dieses Skript selbst aus jenem Ordner, wird es nicht jetzt ueberschrieben
 :: (cmd liest Batch-Dateien zeilenweise), sondern erst in der letzten Zeile.
 if not exist "%SKRIPT_DIR%" mkdir "%SKRIPT_DIR%"
@@ -147,8 +148,9 @@ for /R "%TEMP_EXTRACT%" %%F in (*.bat) do (
         copy "%%F" "%DESKTOP_PATH%\" /Y >nul
         set /a KURS_ANZAHL+=1
     )
+    if /I "%%~nxF"=="SETUP.bat" if /I not "%DESKTOP_PATH%\SETUP.bat"=="%~f0" copy "%%F" "%DESKTOP_PATH%\" /Y >nul
 )
-echo        -^> !KURS_ANZAHL! Kurs-Skripte auf dem Desktop, Setup-Skripte in Dokumente\TueftelPark Skripte
+echo        -^> !KURS_ANZAHL! Kurs-Skripte und SETUP auf dem Desktop, Setup-Skripte in Dokumente\TueftelPark Skripte
 echo.
 
 :: --- 3. WEBSEITEN-VERKNUEPFUNGEN ---
