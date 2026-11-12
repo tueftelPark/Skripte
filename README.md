@@ -36,7 +36,7 @@ Auf dem Desktop liegt pro Kurs ein Skript (z.B. `Sortieranlage.bat`). Es schlies
 |---|---|
 | `NEUER_LAPTOP.bat`, `Einrichtung/` | einmalige Einrichtung eines neuen Laptops (Adminrechte) |
 | `SETUP.bat`, `FULL_RESET.bat` | Laptop zurücksetzen (nur für die Kursleitung); `FULL_RESET.bat /auto` ohne Rückfrage |
-| `AlleLibrariesInstallieren.bat` | wird von den Setup-Skripten aufgerufen; holt den Installer aus [ArduinoKomponentenLibrariesSammlung](https://github.com/tueftelPark/ArduinoKomponentenLibrariesSammlung) |
+| `AlleLibrariesInstallieren.bat` | wird von den Setup-Skripten aufgerufen; holt den Installer aus [ArduinoKomponentenLibrariesSammlung](https://github.com/tueftelPark/ArduinoKomponentenLibrariesSammlung). Die Libraries werden nur neu heruntergeladen, wenn sich auf GitHub etwas geändert hat, sonst kommen sie aus einer lokalen Kopie |
 | `NanoErkennung.bat` | wird von den Setup-Skripten aufgerufen; Nano-Klone erscheinen in der Arduino IDE als „Arduino Nano“ statt „Unknown“ (siehe unten) |
 | `Kurse/` | ein Skript pro Kurs — **nur diese** kommen auf den Desktop |
 
