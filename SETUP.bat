@@ -2,7 +2,7 @@
 setlocal enabledelayedexpansion
 
 echo ========================================================
-echo   TueftelPark - Laptop Setup LIGHT (Desktop & Skripte)
+echo   TueftelPark - Laptop Setup LIGHT (Desktop und Skripte)
 echo ========================================================
 echo.
 

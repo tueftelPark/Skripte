@@ -296,7 +296,7 @@ if exist "%TEMP_EXTRACT%" rmdir /S /Q "%TEMP_EXTRACT%"
 
 echo.
 echo ========================================================
-echo   Laptop-Setup (Programme, Skripte & Links) erfolgreich!
+echo   Laptop-Setup (Programme, Skripte und Links) erfolgreich!
 echo ========================================================
 echo.
 echo Starte nun automatisch die Library-Installation...
